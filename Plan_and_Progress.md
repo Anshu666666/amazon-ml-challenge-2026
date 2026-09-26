@@ -93,5 +93,33 @@ Following the diagnosis of public score `0.656` (caused by negative downsampling
 - Validated via official `validate_submission.py`: **PASS — no blocking issues found**.
 - Compiled final contest package: `final_submission_package.zip` (334.84 MB).
 
+---
 
+### 4. Phase 9: Roadmap to 0.950 – 0.990+ & Scalable Multi-Pathway Candidate Expansion (Active)
 
+#### Methodology Checkpoint & Empirical Findings:
+1. **Empirical Evaluation of Dual-Threshold Step 1 (Completed):**
+   - **Hypothesis:** Lowering probability threshold to $P \ge 0.50$ when clean brands match and address is missing rescues false negatives and boosts score.
+   - **Evaluation on Full 441,365 Validation Entities (`test_dual_threshold_eval.py`):**
+     - Baseline Macro $F_{0.5}$: `0.89285` ($T=0.64$, singleton cutoff $0.75$).
+     - Step 1 Dual Threshold ($P \ge 0.50$): dropped to `0.89107` (-0.00178 regression).
+     - Rescued candidates achieved only **48.37% precision** (8,380 false positives vs 7,851 true positives).
+   - **Mathematical Proof:** Under $F_{0.5} = \frac{1.25 \cdot P \cdot R}{0.25 \cdot P + R}$, precision is weighted $4\times$ heavier than recall ($\frac{\partial F_{0.5}}{\partial P} / \frac{\partial F_{0.5}}{\partial R} = 4$). Any rescued candidate group must achieve $\ge 80.0\%$ precision; naive threshold lowering on the old model degrades score.
+
+2. **Root Cause Analysis of Recall Bottleneck (Completed):**
+   - Dense E5 semantic embeddings alone captured 1,368,042 / 1,526,765 true links = **89.60% recall** (158,723 true links missed).
+   - Phase 8 key blocking raised recall to **92.99%** (capped theoretical ceiling $< 0.93$).
+   - Granular inspection of 50+ missed pairs (`inspect_unrecovered_pairs.py`) revealed:
+     - 40%+ of Indian and 15%+ of US addresses put landmarks/cities before street numbers (e.g., `Sector 57, Noida, C-66`, `Alliance, OH, 71 Oxford Street`), which prefix regex `^\s*(\d+)` completely missed.
+     - Multi-pathway blocking: (1) Clean brand exact match, (2) Rare brand words ($\ge 4$ chars, vowel-collapsed, frequency-filtered), (3) Unanchored address tokens `(country, number, street_word)`, and (4) Postal keys.
+     - Empirical test on 27,788 missed pairs (`test_super_recovery.py`): recovered 20,516 pairs (**73.83% recovery rate**).
+     - **Projected candidate recall jumps to 97.28%**!
+
+3. **Memory Safety & Hardware Utilization Architecture (Active):**
+   - In multi-process candidate expansion on Windows (`spawn`), passing 5.3M dictionary entries via IPC queue duplicates memory across workers, risking `MemoryError` on 16GB RAM.
+   - Designed bounded single-pass streaming architecture ($< 2.5\text{ GB}$ peak RAM), zero memory duplication, periodic per-core CPU and available RAM logging (`flush=True`).
+   - Built and validated `test_demo_expansion_robust.py` on 50,000 queries and 200,000 catalog rows:
+     - Peak RAM consumed: only 130 MB, leaving 8.66 GB RAM free.
+     - 471,738 candidate links generated with zero errors.
+   - Actively running full test set candidate expansion (`expand_candidates_key_blocking.py --mode test`) to produce `output/candidate_pairs_v4.tsv`.
+   - Next: High-throughput parallel inference utilizing 6 cores across 1,732,544 test queries.

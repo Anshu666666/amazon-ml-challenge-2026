@@ -32,12 +32,12 @@ def extract_digits(text):
 
 def log_memory(label=""):
     mem = psutil.virtual_memory()
-    print(f"  [MEM {label}] Used: {mem.used / (1024**3):.2f} GB / {mem.total / (1024**3):.2f} GB ({mem.percent}%)", flush=True)
+    print(f"  [RAM {label}] Available (Left): {mem.available / (1024**3):.2f} GB | Used: {mem.used / (1024**3):.2f} GB / {mem.total / (1024**3):.2f} GB ({mem.percent}%)", flush=True)
 
 def get_cpu_usage():
-    per_cpu = psutil.cpu_percent(interval=0.1, percpu=True)
-    usage_str = " ".join([f"{int(c)}%" for c in per_cpu])
-    return f"CPU: [{usage_str}]"
+    per_cpu = psutil.cpu_percent(interval=0.05, percpu=True)
+    usage_str = " ".join([f"C{i}:{int(c)}%" for i, c in enumerate(per_cpu)])
+    return f"CPU Util: [{usage_str}]"
 
 
 def build_test_sqlite_catalog(s1_path, s2_path, s3_path, db_path):
@@ -461,7 +461,7 @@ def run_test_inference(cands_path, s1_path, s2_path, s3_path, out_dir, out_match
                     (c_idx, batch, db_path, model_mode, lgb_path, xgb_path, threshold, singleton_cutoff)
                 ))
                 
-                if (c_idx + 1) % 50 == 0:
+                if (c_idx + 1) % 15 == 0 or (c_idx + 1) == (total_queries + chunk_size - 1) // chunk_size:
                     elapsed = time.time() - start_time
                     qps = completed_queries / max(elapsed, 0.001)
                     rem_sec = max(0, (total_queries - completed_queries) / max(qps, 1))
