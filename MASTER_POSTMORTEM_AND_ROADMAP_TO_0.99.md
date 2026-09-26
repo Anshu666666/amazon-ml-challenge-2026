@@ -288,8 +288,8 @@ We conducted rigorous empirical experiments on all **441,365 validation entities
 
 ## 7. Current Execution Status & Summary of Deliverables
 
-1. **Candidate Expansion v4:** Running 6-core parallel multi-pathway expansion generating `output/candidate_pairs_v4.tsv` with $\ge 97.28\%$ candidate recall.
-2. **Inference Pipeline:** Updated with per-core CPU utilization and real-time available RAM left logging every 25 chunks.
-3. **Smoke Test Verification:** Passed on 3,000 queries with 6 parallel workers (`test_inference_smoke.py`).
+1. **Candidate Expansion v4 (Completed):** Multi-pathway blocking generated **15,249,142 extra candidates** across 1,684,832 queries (97.2% query coverage) in 584.8s. Promoted to `output/candidate_pairs.tsv` (849.3 MB, verified 1,732,544 rows).
+2. **Smoke Test Verification (Passed):** 3,000 queries processed across 6 cores in 15.5s with zero errors and 8.14 GB free RAM (`test_inference_smoke.py`).
+3. **Inference Pipeline (Active):** Running 6-core multiprocessing test inference (`task-567`) across all 1,732,544 queries with per-core CPU and available RAM telemetry logged every 15 chunks (~30s).
 4. **Validation Baseline:** Mathematically verified at $T=0.64$, singleton cutoff $=0.75$ with zero false positive pollution.
-
+5. **Next Deliverables:** Strict subset verification (`verify_subset.py`), official contest validator audit (`validate_submission.py`), and final packaging (`create_submission_zip.py`).

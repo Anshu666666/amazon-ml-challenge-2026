@@ -118,8 +118,14 @@ Following the diagnosis of public score `0.656` (caused by negative downsampling
 3. **Memory Safety & Hardware Utilization Architecture (Active):**
    - In multi-process candidate expansion on Windows (`spawn`), passing 5.3M dictionary entries via IPC queue duplicates memory across workers, risking `MemoryError` on 16GB RAM.
    - Designed bounded single-pass streaming architecture ($< 2.5\text{ GB}$ peak RAM), zero memory duplication, periodic per-core CPU and available RAM logging (`flush=True`).
-   - Built and validated `test_demo_expansion_robust.py` on 50,000 queries and 200,000 catalog rows:
-     - Peak RAM consumed: only 130 MB, leaving 8.66 GB RAM free.
-     - 471,738 candidate links generated with zero errors.
-   - Actively running full test set candidate expansion (`expand_candidates_key_blocking.py --mode test`) to produce `output/candidate_pairs_v4.tsv`.
-   - Next: High-throughput parallel inference utilizing 6 cores across 1,732,544 test queries.
+   - Built and validated `test_demo_expansion_robust.py` on 50,000 queries and 200,000 catalog rows with complete RAM stability (8.66 GB RAM free).
+   - **Candidate Expansion v4 Successfully Completed:**
+     - Scanned all 9,969,589 catalog rows in 584.8s (9.7 minutes).
+     - Added **15,249,142 extra high-recall candidates** across 1,684,832 queries (97.2% query coverage).
+     - Generated and promoted `output/candidate_pairs.tsv` (849.3 MB, exactly 1,732,544 queries).
+   - **6-Core Multiprocessing Smoke Test Passed (`test_inference_smoke.py`):**
+     - Processed 3,000 queries across 6 cores in 15.5s (0.26 min) with zero errors and 8.14 GB available RAM.
+   - **Full 6-Core Test Inference Launched (Active):**
+     - Running `inference.py` across all 1,732,544 test queries with `MAX_WORKERS = 6`.
+     - Real-time telemetry logging per-core CPU utilization (`[C0:x% ... C11:x%]`) and available RAM left every 15 chunks (~30 seconds) with `flush=True`.
+     - Output: Streaming strictly ordered results to `output/matching_results.tsv`.
