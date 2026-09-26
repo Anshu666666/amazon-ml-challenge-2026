@@ -1,0 +1,17 @@
+{
+  "optimal_threshold": 0.68,
+  "validation_macro_f05": 0.9327800988995238,
+  "features": [
+    "is_address_missing",
+    "digits_match",
+    "name_ratio",
+    "name_token_sort",
+    "name_partial",
+    "name_token_set",
+    "addr_ratio",
+    "addr_token_sort",
+    "country_match"
+  ],
+  "model_file": "lgbm_model.txt",
+  "timestamp": "2026-09-26 21:08:28"
+}

@@ -1,0 +1,26 @@
+{
+  "model_mode": "lgbm",
+  "optimal_threshold": 0.64,
+  "singleton_cutoff": 0.75,
+  "validation_macro_f05": 0.8949932184275723,
+  "lgbm_score": 0.8949932184275723,
+  "xgb_score": null,
+  "ensemble_score": null,
+  "features": [
+    "name_ratio",
+    "name_token_sort",
+    "name_token_set",
+    "name_partial",
+    "name_compact_match",
+    "name_acronym_match",
+    "is_addr_missing",
+    "street_num_match",
+    "street_name_sim",
+    "city_state_sim",
+    "addr_token_sort",
+    "digits_match",
+    "country_match",
+    "is_dba_pattern",
+    "source_origin"
+  ]
+}

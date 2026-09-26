@@ -1,0 +1,40 @@
+# Virtual Environment
+venv/
+env/
+.env
+
+# Python Cache
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+
+# Raw Competition Datasets & Archives
+6ab10eb3b23ba_student_resource/
+6ab10eb3b23ba_student_resource.zip
+*.zip
+
+# Multi-GB Intermediate Databases, Caches, & Large TSV/CSV Matrices
+output/*.db*
+output/*.csv
+output/*.npy
+output/*.tsv
+output/test_cache/
+output/test_cache/**
+output/embeddings_cache/
+output/embeddings_cache/**
+
+# Generated Packaging Build Directories
+final_submission/
+final_submission_package/
+
+# Temporary / Scratch Files
+output/smoke_*
+output/temp_*
+*.log
+
+# OS & Editor Files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
