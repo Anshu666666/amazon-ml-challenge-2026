@@ -155,17 +155,29 @@ def scan_optimal_threshold(val_csv_path, val_probs, val_gt_path, model_label="Mo
     return best_threshold, best_macro_f05, results
 
 
-def load_dataset(csv_path, chunk_size=500000):
+def load_dataset(csv_path, chunk_size=500000, dropout_rate=0.0):
     log_memory(f"Loading {os.path.basename(csv_path)}")
     X_chunks = []
     y_chunks = []
     
     total_rows = 0
     t0 = time.time()
+    np.random.seed(42)
     
     for chunk in pd.read_csv(csv_path, chunksize=chunk_size, usecols=FEATURE_COLS + ['label'], dtype=COL_DTYPES):
         total_rows += len(chunk)
-        X_chunks.append(chunk[FEATURE_COLS].to_numpy(dtype=np.float32))
+        X_mat = chunk[FEATURE_COLS].to_numpy(dtype=np.float32)
+        if dropout_rate > 0:
+            mask = np.random.rand(len(X_mat)) < dropout_rate
+            if np.any(mask):
+                X_mat[mask, FEATURE_COLS.index('is_addr_missing')] = 1.0
+                X_mat[mask, FEATURE_COLS.index('street_num_match')] = 0.5
+                X_mat[mask, FEATURE_COLS.index('street_name_sim')] = 0.5
+                X_mat[mask, FEATURE_COLS.index('city_state_sim')] = 0.5
+                X_mat[mask, FEATURE_COLS.index('addr_token_sort')] = 0.0
+                X_mat[mask, FEATURE_COLS.index('digits_match')] = 0.0
+                X_mat[mask, FEATURE_COLS.index('is_dba_pattern')] = 0.0
+        X_chunks.append(X_mat)
         y_chunks.append(chunk['label'].to_numpy(dtype=np.int8))
             
     X = np.vstack(X_chunks)
@@ -174,13 +186,13 @@ def load_dataset(csv_path, chunk_size=500000):
     gc.collect()
     
     elapsed = time.time() - t0
-    print(f"Loaded {total_rows:,} rows from {csv_path} in {elapsed:.1f}s ({X.nbytes / (1024**2):.1f} MB matrix).")
+    print(f"Loaded {total_rows:,} rows from {csv_path} in {elapsed:.1f}s ({X.nbytes / (1024**2):.1f} MB matrix, dropout={dropout_rate}).")
     log_memory("After array consolidation")
     
     return X, y
 
 
-def train_and_evaluate(train_csv, val_csv, val_gt_path, out_dir):
+def train_and_evaluate(train_csv, val_csv, val_gt_path, out_dir, dropout_rate=0.0):
     log_memory("Pipeline Start")
     
     out_lgb_model = os.path.join(out_dir, "lgbm_model_v3.txt")
@@ -193,16 +205,16 @@ def train_and_evaluate(train_csv, val_csv, val_gt_path, out_dir):
     # -------------------------------------------------------------
     # MODEL 1: High-Capacity LightGBM Booster
     # -------------------------------------------------------------
-    if os.path.exists(out_lgb_model) and os.path.exists(val_probs_lgb_path):
+    if False and os.path.exists(out_lgb_model) and os.path.exists(val_probs_lgb_path):
         print(f"\n[LightGBM] Found existing trained model ({out_lgb_model}) and predictions ({val_probs_lgb_path}). Loading...")
         val_probs_lgb = np.load(val_probs_lgb_path)
     else:
         print("\n" + "="*60)
-        print("=== MODEL 1: Training High-Capacity LightGBM Booster (800 Trees) ===")
+        print(f"=== MODEL 1: Training High-Capacity LightGBM Booster (800 Trees, Dropout={dropout_rate}) ===")
         print("="*60)
         print(f"\n=== Loading Training & Validation Data for LightGBM ===")
-        X_train, y_train = load_dataset(train_csv)
-        X_val, y_val = load_dataset(val_csv)
+        X_train, y_train = load_dataset(train_csv, dropout_rate=dropout_rate)
+        X_val, y_val = load_dataset(val_csv, dropout_rate=0.0)
         
         train_data_lgb = lgb.Dataset(X_train, label=y_train, feature_name=FEATURE_COLS, free_raw_data=True)
         val_data_lgb = lgb.Dataset(X_val, label=y_val, feature_name=FEATURE_COLS, reference=train_data_lgb, free_raw_data=False)
@@ -363,9 +375,14 @@ def train_and_evaluate(train_csv, val_csv, val_gt_path, out_dir):
 
 
 if __name__ == "__main__":
+    import argparse
+    parser = argparse.ArgumentParser(description="Train LightGBM & XGBoost with Exact Macro F0.5 Optimization.")
+    parser.add_argument("--dropout", type=float, default=0.0, help="Address dropout rate during training (e.g. 0.15)")
+    args = parser.parse_args()
+    
     out_dir = r"C:\Users\anshu\OneDrive\Desktop\amazon-ml\output"
     train_csv = os.path.join(out_dir, "full_train_features_v3.csv")
     val_csv = os.path.join(out_dir, "full_val_features_v3.csv")
     val_gt = os.path.join(out_dir, "val_gt_split.tsv")
     
-    train_and_evaluate(train_csv, val_csv, val_gt, out_dir)
+    train_and_evaluate(train_csv, val_csv, val_gt, out_dir, dropout_rate=args.dropout)
