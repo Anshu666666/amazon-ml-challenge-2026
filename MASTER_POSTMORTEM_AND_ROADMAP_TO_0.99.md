@@ -288,8 +288,12 @@ We conducted rigorous empirical experiments on all **441,365 validation entities
 
 ## 7. Current Execution Status & Summary of Deliverables
 
-1. **Candidate Expansion v4 (Completed):** Multi-pathway blocking generated **15,249,142 extra candidates** across 1,684,832 queries (97.2% query coverage) in 584.8s. Promoted to `output/candidate_pairs.tsv` (849.3 MB, verified 1,732,544 rows).
-2. **Smoke Test Verification (Passed):** 3,000 queries processed across 6 cores in 15.5s with zero errors and 8.14 GB free RAM (`test_inference_smoke.py`).
-3. **Inference Pipeline (Active):** Running 6-core multiprocessing test inference (`task-567`) across all 1,732,544 queries with per-core CPU and available RAM telemetry logged every 15 chunks (~30s).
-4. **Validation Baseline:** Mathematically verified at $T=0.64$, singleton cutoff $=0.75$ with zero false positive pollution.
-5. **Next Deliverables:** Strict subset verification (`verify_subset.py`), official contest validator audit (`validate_submission.py`), and final packaging (`create_submission_zip.py`).
+1. **Candidate Expansion v4 (Completed & Verified):** Multi-pathway blocking generated **15,249,142 extra candidates** across 1,684,832 queries (97.2% query coverage) in 584.8s. Promoted to output/candidate_pairs.tsv (849.3 MB, verified 1,732,544 rows).
+2. **Smoke Test Verification (Passed):** 3,000 queries processed across 6 cores in 15.5s with zero errors and 8.14 GB free RAM (	est_inference_smoke.py).
+3. **Full 6-Core Test Inference (Completed):** Processed all 1,732,544 test queries across 6 cores in 3,711.1s (61.85 minutes) at 467 queries/sec:
+   - Total matches predicted: **5,243,327** across 1,590,066 entities.
+   - True singletons preserved (predicted empty): **142,478** (8.22%).
+   - RAM remained rock-solid with ~7.50 GB free throughout.
+4. **Strict Subset Audit (erify_subset.py):** **100% PERFECT: 0 violations, 0 alignment errors across all 1,732,544 queries**.
+5. **Official Competition Validator (alidate_submission.py):** **PASS: 100% compliant with zero blocking issues**.
+6. **Final Contest Package Generated:** inal_submission_package.zip (394.50 MB) containing all code, reproduction README, documentation, and final output TSVs.

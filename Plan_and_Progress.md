@@ -125,7 +125,14 @@ Following the diagnosis of public score `0.656` (caused by negative downsampling
      - Generated and promoted `output/candidate_pairs.tsv` (849.3 MB, exactly 1,732,544 queries).
    - **6-Core Multiprocessing Smoke Test Passed (`test_inference_smoke.py`):**
      - Processed 3,000 queries across 6 cores in 15.5s (0.26 min) with zero errors and 8.14 GB available RAM.
-   - **Full 6-Core Test Inference Launched (Active):**
-     - Running `inference.py` across all 1,732,544 test queries with `MAX_WORKERS = 6`.
-     - Real-time telemetry logging per-core CPU utilization (`[C0:x% ... C11:x%]`) and available RAM left every 15 chunks (~30 seconds) with `flush=True`.
-     - Output: Streaming strictly ordered results to `output/matching_results.tsv`.
+   - **Full 6-Core Test Inference Completed Successfully:**
+     - Processed all 1,732,544 test queries across 6 cores in 3,711.1s (61.85 minutes) at 467 queries/sec.
+     - Total matches predicted: **5,243,327** across 1,590,066 queries.
+     - Preserved singletons (predicted empty): **142,478** (8.22%).
+     - Available RAM remained stable at **~7.50 GB free** throughout the run.
+   - **Strict Subset Verification (erify_subset.py):**
+     - **100% PERFECT: 0 violations, 0 alignment errors across all 1,732,544 queries**.
+   - **Official Competition Validator (alidate_submission.py):**
+     - **PASS: All 1,732,544 rows compliant with zero blocking issues**.
+   - **Final Contest Package Generated:**
+     - Successfully built inal_submission_package.zip (394.50 MB) containing all code, reproduction README, documentation, and final output TSVs.
